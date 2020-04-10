@@ -42,8 +42,8 @@ using namespace Imager;
 using namespace std::chrono_literals;
 
 void prepareScene(Scene & scene);
-void saveImage(std::vector<unsigned char> & rgbaBuffer, size_t pixelsWide,
-                size_t pixelsHigh);
+void saveImage(const char* filename, std::vector<unsigned char> & rgbaBuffer,
+                 size_t pixelsWide, size_t pixelsHigh);
 
 int main()
 {
@@ -59,18 +59,19 @@ int main()
     auto start1 = std::chrono::high_resolution_clock::now();
 
     auto b1 = scene.SaveImage(0, 600, 0, 180, zoom, antiAliasFactor);
-    std::cout << b1.size() << std::endl;
+    saveImage("single b1", b1, 600, 180);
+
     auto b2 = scene.SaveImage(0, 600, 180, 360, zoom, antiAliasFactor);
-    std::cout << b2.size() << std::endl;
+    saveImage("single b2", b2, 600, 180);
+
     std::vector<unsigned char> buffer;
     buffer.insert(buffer.end(), b1.begin(), b1.end());
     buffer.insert(buffer.end(), b2.begin(), b2.end());
-    std::cout << buffer.size() << std::endl;
-    saveImage(buffer, 600, 360);
+
+    saveImage("double b1 + b2", buffer, 600, 360);
 
     // auto buffer = scene.SaveImage(0, 600, 0, 360, zoom, antiAliasFactor);
-    // std::cout << "buffer " << buffer.size() << std::endl;
-    // saveImage(buffer, 600, 360);
+    // saveImage("one thread - single", buffer, 600, 360);
 
     auto end1 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> difference1 = end1 - start1;
@@ -136,11 +137,9 @@ void prepareScene(Scene & scene)
     scene.AddLightSource(LightSource(Vector(-25.0, +30.0, +40.0), Color(0.3, 0.2, 0.1, 1.0)));
 }
 
-void saveImage(std::vector<unsigned char> & rgbaBuffer, size_t pixelsWide,
-                size_t pixelsHigh)
+void saveImage(const char* filename, std::vector<unsigned char> & rgbaBuffer,
+                 size_t pixelsWide, size_t pixelsHigh)
 {
-    std::cout << rgbaBuffer.size();
-    const char* filename = "chessboard.png";
     // Write the PNG file
     const unsigned error = lodepng::encode(
         filename, 
