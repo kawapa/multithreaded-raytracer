@@ -33,6 +33,7 @@
 #include <iostream>
 #include "imager.h"
 #include "lodepng.h"
+#include <vector>
 
 namespace Imager
 {
@@ -729,11 +730,14 @@ namespace Imager
         double zoom, 
         size_t antiAliasFactor) const
     {
+        const size_t differenceWide = pixelsWideEnd - pixelsWideStart;
+        const size_t differenceHigh = pixelsHighEnd - pixelsHighStart;
+
         // Oversample the image using the anti-aliasing factor.
-        const size_t largePixelsWide = antiAliasFactor * pixelsWide;
-        const size_t largePixelsHigh = antiAliasFactor * pixelsHigh;
+        const size_t largePixelsWide = antiAliasFactor * differenceWide;
+        const size_t largePixelsHigh = antiAliasFactor * differenceHigh;
         const size_t smallerDim = 
-            ((pixelsWide < pixelsHigh) ? pixelsWide : pixelsHigh);
+            ((differenceWide < differenceHigh) ? differenceWide : differenceHigh);
 
         const double largeZoom  = antiAliasFactor * zoom * smallerDim;
         ImageBuffer buffer(largePixelsWide, largePixelsHigh, backgroundColor);
@@ -753,10 +757,10 @@ namespace Imager
         // Later we will come back and fix these pixels.
         PixelList ambiguousPixelList;
 
-        for (size_t i=0; i < largePixelsWide; ++i)
+        for (size_t i=pixelsWideStart*3; i < largePixelsWide; ++i)
         {
             direction.x = (i - largePixelsWide/2.0) / largeZoom;
-            for (size_t j=0; j < largePixelsHigh; ++j)
+            for (size_t j=pixelsHighStart*3; j < largePixelsHigh; ++j)
             {
                 direction.y = (largePixelsHigh/2.0 - j) / largeZoom;
 
@@ -842,16 +846,22 @@ namespace Imager
         const unsigned char OPAQUE_ALPHA_VALUE = 255;
         const unsigned BYTES_PER_PIXEL = 4;
 
-        // The number of bytes in buffer to be passed to LodePNG.
         const unsigned RGBA_BUFFER_SIZE = 
-            pixelsWide * pixelsHigh * BYTES_PER_PIXEL;
+            differenceWide * differenceHigh * BYTES_PER_PIXEL;
+/*
+        for (size_t i=pixelsWideStart*3; i < largePixelsWide; ++i)
+        {
+            direction.x = (i - largePixelsWide/2.0) / largeZoom;
+            for (size_t j=pixelsHighStart*3; j < largePixelsHigh; ++j)
+            {
+*/
 
         std::vector<unsigned char> rgbaBuffer(RGBA_BUFFER_SIZE);
         unsigned rgbaIndex = 0;
         const double patchSize = antiAliasFactor * antiAliasFactor;
-        for (size_t j=0; j < pixelsHigh; ++j)
+        for (size_t j=0; j < differenceHigh; ++j)
         {
-            for (size_t i=0; i < pixelsWide; ++i)
+            for (size_t i=0; i < differenceWide; ++i)
             {
                 Color sum(0.0, 0.0, 0.0);
                 for (size_t di=0; di < antiAliasFactor; ++di)

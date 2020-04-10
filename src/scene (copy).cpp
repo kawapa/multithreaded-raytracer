@@ -841,6 +841,7 @@ namespace Imager
         const unsigned BYTES_PER_PIXEL = 4;
 
         // The number of bytes in buffer to be passed to LodePNG.
+
         const unsigned RGBA_BUFFER_SIZE = 
             pixelsWide * pixelsHigh * BYTES_PER_PIXEL;
 
